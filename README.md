@@ -18,12 +18,12 @@ With no Frank address set, everything works on its own. Frank is simulated, the 
 
 ## Connecting Frank
 
-Once `atelier-api` is running (see `FRANK_HANDOFF.md`), each person opens **Settings** (the status pill, top right) and enters:
+The live site is https://trippmorgan.github.io/atelier/. `atelier-api` runs on SuperServer (the hub), reachable only over the family tailnet at `https://tripp-super-server.tail9279ff.ts.net:8443`; Voldemort does the GPU work behind it over SSH (see `FRANK_HANDOFF.md`, whose single-machine notes are superseded by that split). Each person opens **Settings** (the status pill, top right) and enters:
 
-- **Frank's address:** e.g. `https://voldemort.<tailnet>.ts.net`
-- **Studio code:** their own code
+- **Frank's address:** `https://tripp-super-server.tail9279ff.ts.net:8443`
+- **Studio code:** their own code (Tripp hands these out privately)
 
-Shortcut: send them `https://<github-user>.github.io/atelier/?api=https://voldemort.<tailnet>.ts.net`. That pre-fills the address, so they only type their code.
+Shortcut: https://trippmorgan.github.io/atelier/?api=https://tripp-super-server.tail9279ff.ts.net:8443 pre-fills the address, so they only type their code. The device has to be on the tailnet first.
 
 ## Files
 
