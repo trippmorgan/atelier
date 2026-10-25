@@ -510,7 +510,7 @@ const api = {
       const headers = { 'Content-Type':'application/json' };
       if (settings.token) headers.Authorization = 'Bearer ' + settings.token;
       const r = await fetch(settings.apiBase.replace(/\/+$/, '') + path, { method, headers, signal: ctl.signal, body: body ? JSON.stringify(body) : undefined });
-      if (!r.ok) { let m = 'Frank said ' + r.status; try { const j = await r.json(); m = j.error || j.detail || m; } catch (e) {} throw new Error(m); }
+      if (!r.ok) { let m = 'Frank said ' + r.status; try { const j = await r.json(); m = j.error || j.detail || m; } catch (e) {} const err = new Error(m); err.status = r.status; throw err; }
       return r.status === 204 ? null : r.json();
     } catch (e) {
       if (e.name === 'AbortError') throw new Error('Frank took too long to answer.');
@@ -557,8 +557,13 @@ async function updateStatus() {
     const map = { online:['ok','Frank online'], training:['warn','Frank training'], offline:['off','Frank offline'] };
     const [c, l] = map[st.state] || ['off', 'Frank offline'];
     el.className = 'status ' + c; el.querySelector('span').textContent = l;
-  } catch (e) { el.className = 'status off'; el.querySelector('span').textContent = "Can't reach Frank"; }
+    if (st.me && st.me !== state.me) { state.me = st.me; store.set('me', state.me); renderMe(); }
+  } catch (e) {
+    if (e.status === 401) { el.className = 'status warn'; el.querySelector('span').textContent = settings.token ? 'Code not accepted' : 'Enter your code'; }
+    else { el.className = 'status off'; el.querySelector('span').textContent = "Can't reach Frank"; }
+  }
 }
+const cleanCode = v => String(v || '').trim().replace(/^(marjorie|ellie|tripp)\s*:\s*/i, '').replace(/\s+/g, '');
 
 /* ---------- views ---------- */
 function statusBlock(st) {
@@ -774,16 +779,41 @@ async function renderPlan() {
 /* ---------- sheets ---------- */
 function openWho(first) {
   openModal(`<p class="eyebrow">${first ? 'Welcome to the Atelier' : 'Switch'}</p><h2>Who's here?</h2>
-    <p class="muted sm">This only labels your ideas and comments on this device. Frank's studio code does the real sign-in.</p>
+    <p class="muted sm">In demo mode this only labels your work on this device. When Frank is connected, your studio code decides who you are.</p>
     <div class="people">${PEOPLE.map(p => `<button data-act="pick-who" data-id="${p.id}">${avatar(p.id)}${esc(p.name)}</button>`).join('')}</div>`, 'narrow');
   if (first) modalEl.dataset.locked = '1';
+}
+function openSignIn(first, msg) {
+  openModal(`<p class="eyebrow">${first ? 'Welcome to the Atelier' : 'Sign in'}</p><h2>Enter your studio code</h2>
+    <p class="muted sm">Tripp sent each painter a studio code on Telegram. It tells Frank who you are and signs every idea and comment. Paste it exactly as sent.</p>
+    <form data-form="signin">
+      <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus></label>
+      <p class="muted sm" id="signin-msg" ${msg ? '' : 'hidden'}>${esc(msg || '')}</p>
+      <div class="row"><button class="btn primary">Sign in</button><button type="button" class="btn ghost" data-act="settings">Change address</button></div>
+    </form>`, 'narrow');
+  if (first) modalEl.dataset.locked = '1';
+}
+async function signIn(token) {
+  const prev = settings.token; settings.token = cleanCode(token);
+  try {
+    const st = await api.status();
+    store.set('settings', settings);
+    if (st.me) { state.me = st.me; store.set('me', state.me); renderMe(); }
+    delete modalEl.dataset.locked; closeModal(); updateStatus(); route();
+    toast(`Signed in as ${person(state.me).name}. Frank is ${st.state || 'there'}.`);
+    return true;
+  } catch (e) {
+    settings.token = prev;
+    const m = $('#signin-msg'); if (m) { m.hidden = false; m.textContent = e.status === 401 ? "Frank doesn't know that code. Check for a missing letter, and paste it rather than typing." : e.message; }
+    return false;
+  }
 }
 function openSettings() {
   openModal(`<p class="eyebrow">Settings</p><h2>Connect to Frank</h2>
     <p class="muted sm">Leave the address blank to stay in demo mode. Everything works, but Frank is simulated and art stays on this device.</p>
     <form data-form="settings">
       <label class="f">Frank's address<input name="apiBase" placeholder="https://voldemort.your-tailnet.ts.net" value="${esc(settings.apiBase)}" autocomplete="off" inputmode="url"></label>
-      <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off"></label>
+      <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
       <div class="row"><button class="btn primary">Save</button><button type="button" class="btn" data-act="test-conn">Test connection</button></div>
     </form>
     <h4>Demo data</h4>
@@ -795,6 +825,7 @@ let pendingUpload = null;
 const acts = {
   close: closeModal,
   settings: openSettings,
+  signin: () => openSignIn(false),
   who: () => openWho(false),
   'pick-who': el => { state.me = el.dataset.id; store.set('me', state.me); delete modalEl.dataset.locked; closeModal(); renderMe(); route(); },
   upload: () => $('#file').click(),
@@ -838,10 +869,10 @@ const acts = {
   'test-conn': async () => {
     const f = sheet.querySelector('form[data-form=settings]');
     const prev = { ...settings };
-    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = f.elements.token.value.trim();
+    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = cleanCode(f.elements.token.value);
     if (!settings.apiBase) { Object.assign(settings, prev); return toast('No address entered, so this stays in demo mode.'); }
-    try { const st = await api.status(); toast(`Connected. Frank is ${st.state || 'there'}.`); }
-    catch (e) { toast(e.message); }
+    try { const st = await api.status(); toast(`Connected as ${person(st.me).name}. Frank is ${st.state || 'there'}.`); }
+    catch (e) { toast(e.status === 401 ? "Reached Frank, but he doesn't know that code." : e.message); }
     finally { Object.assign(settings, prev); }
   },
   'reset-demo': () => { if (!confirm('Reset all demo art, chats and plans on this device?')) return; db = seedDb(); saveDb(); state.jobs = []; closeModal(); route(); toast('Demo data reset.'); },
@@ -874,10 +905,13 @@ const forms = {
     if (currentRoute() === 'gallery' || currentRoute() === 'home') route();
   },
   settings: async f => {
-    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = f.elements.token.value.trim();
-    store.set('settings', settings); closeModal(); updateStatus(); route();
-    toast(settings.apiBase ? 'Saved. Talking to Frank now.' : 'Demo mode.');
+    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = cleanCode(f.elements.token.value);
+    store.set('settings', settings); closeModal();
+    if (!settings.apiBase) { updateStatus(); route(); return toast('Demo mode.'); }
+    if (!settings.token) { updateStatus(); route(); return openSignIn(false); }
+    if (!(await signIn(settings.token))) openSignIn(false, "Frank doesn't know that code. Check for a missing letter, and paste it rather than typing.");
   },
+  signin: async f => { await signIn(f.elements.token.value); },
 };
 
 document.addEventListener('click', async e => {
@@ -955,6 +989,11 @@ async function route() {
   view.innerHTML = '<div class="loading">One moment…</div>';
   try { await routes[r](arg); window.scrollTo(0, 0); }
   catch (e) {
+    if (e.status === 401 && !api.demo) {
+      view.innerHTML = `<div class="empty"><h3>Sign in to the studio</h3><p>Enter the studio code Tripp sent you.</p><button class="btn primary" data-act="signin">Enter code</button></div>`;
+      if (modalEl.hidden) openSignIn(!settings.token);
+      return;
+    }
     view.innerHTML = `<div class="empty"><h3>Couldn't load this</h3><p>${esc(e.message)}</p><button class="btn" data-act="settings">Check settings</button></div>`;
   }
 }
@@ -968,7 +1007,8 @@ if (params.get('api')) {
 renderMe(); updateStatus(); setInterval(updateStatus, 60000);
 window.addEventListener('hashchange', route);
 route();
-if (!state.me) openWho(true);
+if (settings.apiBase && !settings.token) openSignIn(true);
+else if (!state.me && !settings.apiBase) openWho(true);
 })();
 </script>
 </body>
