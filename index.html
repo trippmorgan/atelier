@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Atelier</title>
+<meta name="description" content="A studio for painting with Frank">
+<meta name="theme-color" content="#f4ecdb">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a2017'/%3E%3Cpath d='M9 23c5-1 7-6 9-11 1-3 3-4 5-4-1 2-1 4-3 7-3 5-6 7-11 8z' fill='%23e3b21f'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#f4ecdb; --paper-2:#ebdfc5; --card:#fbf6ea; --ink:#2a2017; --ink-2:#6a5843; --line:rgba(42,32,23,.14);
+  --sepia:#8b5a2b; --cobalt:#2340a0; --chrome:#e3b21f; --vermilion:#b5391d; --ok:#3f9a54;
+  --shadow:0 1px 0 rgba(42,32,23,.05),0 10px 26px -14px rgba(42,32,23,.28);
+  --r:14px; --display:'Cormorant Garamond',Georgia,serif; --ui:'Work Sans',system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--paper:#16120d;--paper-2:#211a13;--card:#1d1711;--ink:#f0e6d2;--ink-2:#b3a286;--line:rgba(240,230,210,.12);
+  --sepia:#d39d65;--cobalt:#7d9bff;--chrome:#f0c64a;--vermilion:#ec7656;--shadow:0 10px 26px -14px rgba(0,0,0,.6);color-scheme:dark}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;color:var(--ink);font:15px/1.55 var(--ui);background:var(--paper);
+  background-image:radial-gradient(ellipse at 8% -10%,rgba(227,178,31,.12),transparent 50%),radial-gradient(ellipse at 108% 6%,rgba(35,64,160,.09),transparent 45%);background-attachment:fixed}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,.display{font-family:var(--display);font-weight:600;line-height:1.08;margin:0}
+h1{font-size:clamp(34px,6vw,54px)} h2{font-size:30px} h3{font-size:22px} h4{margin:18px 0 6px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px;font-weight:600}
+.muted{color:var(--ink-2)} .sm{font-size:13px}
+.lede{font-size:17px;color:var(--ink-2);max-width:54ch;margin:10px 0 18px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 16px;
+  background:color-mix(in srgb,var(--paper) 86%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{text-decoration:none;font-family:var(--display);font-size:27px;font-weight:600;white-space:nowrap}
+.brand em{color:var(--sepia)}
+.tabs{display:flex;gap:2px;margin-left:18px}
+.tabs a{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;color:var(--ink-2);text-decoration:none;font-weight:500;font-size:14px}
+.tabs a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tabs a.on{background:var(--ink);color:var(--paper)}
+.spacer{flex:1}
+.status{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--ink-2)}
+.status.ok i{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 22%,transparent)}
+.status.warn i,.status.demo i{background:var(--chrome)} .status.off i{background:var(--vermilion)}
+.me{display:inline-flex;align-items:center;gap:8px;border:0;background:none;cursor:pointer;padding:2px;font-weight:500;font-size:14px}
+.av{--c:var(--sepia);width:32px;height:32px;border-radius:50%;background:var(--c);color:#fff;display:inline-grid;place-items:center;font-size:12px;font-weight:600;flex:none;letter-spacing:.02em}
+.av.sm{width:26px;height:26px;font-size:10px}
+.av.frank{background:#2a2017;color:#e3b21f;font-family:var(--display);font-size:16px;font-style:italic}
+@media (max-width:820px){
+  .tabs{position:fixed;bottom:0;left:0;right:0;margin:0;justify-content:space-around;background:var(--card);border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:30}
+  .tabs a{flex-direction:column;gap:2px;font-size:11px;padding:6px 8px;border-radius:12px}
+  .tabs a svg{width:21px;height:21px}
+  .brand{font-size:23px} .me .nm,.status span{display:none} .status{padding:9px}
+}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 120px}
+
+/* parts */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}
+.link{font-size:13px;color:var(--ink-2);text-decoration:none} .link:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:9px 16px;font-weight:500;cursor:pointer;text-decoration:none;transition:transform .08s,background .15s,color .15s}
+.btn:hover{background:var(--paper-2)} .btn:active{transform:translateY(1px)} .btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn.primary:hover{background:var(--sepia);border-color:var(--sepia)}
+.btn.sm{padding:6px 12px;font-size:13px} .btn.block{width:100%;padding:13px;font-size:16px;margin-top:16px} .btn.ghost{background:none}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center} .row.between{justify-content:space-between}
+.tag{font-size:11px;padding:2px 9px;border-radius:999px;background:var(--paper-2);color:var(--ink-2);white-space:nowrap}
+.tag.doing,.tag.running,.tag.queued,.tag.requested{background:color-mix(in srgb,var(--chrome) 32%,transparent);color:var(--ink)}
+.tag.failed{background:color-mix(in srgb,var(--vermilion) 25%,transparent);color:var(--ink)}
+.tag.scheduled{background:color-mix(in srgb,var(--cobalt) 20%,transparent);color:var(--ink)}
+textarea,input,select{width:100%;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+textarea:focus,input:focus,select:focus{border-color:var(--sepia);box-shadow:0 0 0 3px color-mix(in srgb,var(--sepia) 18%,transparent)}
+textarea{resize:vertical}
+.lbl{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);margin:18px 0 7px}
+.lbl.first{margin-top:0}
+.page-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:6px 0 20px;flex-wrap:wrap}
+.empty{text-align:center;padding:34px 16px;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--ink-2)}
+.note{background:var(--paper-2);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.loading{padding:70px 0;text-align:center;color:var(--ink-2);font-family:var(--display);font-style:italic;font-size:22px}
+
+/* home */
+.hero{padding:14px 0 26px}
+.grid.home{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card.wide{grid-column:1/-1}
+@media (max-width:900px){.grid.home{grid-template-columns:1fr}}
+.question{background:linear-gradient(160deg,var(--card),var(--paper-2))}
+.question h3{font-size:27px;margin:2px 0 10px;font-style:italic}
+.task{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.task:first-of-type{border-top:0;padding-top:0}
+.task .t{flex:1;font-size:14px}
+.frank-state{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.frank-state .av{width:44px;height:44px;font-size:22px}
+.strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
+.thumb{flex:none;width:128px;height:128px;border:0;padding:0;border-radius:10px;overflow:hidden;cursor:pointer;scroll-snap-align:start;background:var(--paper-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* studio */
+.studio{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.studio{grid-template-columns:1fr}}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 13px;font-size:13px;cursor:pointer}
+.chip:hover,.chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.mix{--a:var(--sepia);border-left:3px solid var(--a);padding:4px 0 4px 12px;margin-bottom:12px}
+.mix-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.mix-h b{font-family:var(--display);font-size:19px}
+.badge{margin-left:auto;font-size:11px;border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--ink-2)}
+.badge.ready{border-color:var(--a);color:var(--ink)}
+.mix-r{display:flex;align-items:center;gap:12px}
+.mix-r output{font-variant-numeric:tabular-nums;width:38px;text-align:right;font-size:13px}
+input[type=range]{accent-color:var(--a);padding:0;border:0;background:none;box-shadow:none!important;flex:1}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
+.opts label{font-size:12px;color:var(--ink-2);display:flex;flex-direction:column;gap:4px}
+.seed{display:flex;gap:6px}
+.icon{border:1px solid var(--line);background:var(--paper);border-radius:10px;width:42px;cursor:pointer;font-size:18px;flex:none}
+.job{border-top:1px solid var(--line);padding:14px 0}
+.job:first-child{border-top:0;padding-top:0}
+.bar{height:6px;background:var(--paper-2);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sepia),var(--chrome));border-radius:99px;transition:width .4s}
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.results .thumb{width:100%;height:auto;aspect-ratio:1}
+.recipe{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-top:4px}
+.recipe span{display:inline-flex;align-items:center;gap:5px}
+.recipe i{display:inline-block;height:6px;border-radius:99px;background:var(--a)}
+
+/* gallery */
+.wall{columns:3 250px;column-gap:14px}
+.art{break-inside:avoid;margin:0 0 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s}
+.art:hover{transform:translateY(-2px)}
+.art img{display:block;width:100%;height:auto;background:var(--paper-2)}
+.art figcaption{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px}
+.art figcaption b{font-family:var(--display);font-size:19px;font-weight:600;line-height:1.15}
+.filters{margin-bottom:18px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(20,14,8,.52);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
+.modal[hidden]{display:none}
+.sheet{background:var(--card);border-radius:18px;max-width:980px;width:100%;max-height:90vh;overflow:auto;padding:24px;position:relative;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+.sheet.narrow{max-width:470px}
+.x{position:absolute;top:12px;right:12px;border:0;background:var(--paper-2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}
+@media (max-width:620px){.modal{align-items:flex-end;padding:0}.sheet{border-radius:18px 18px 0 0;max-height:92vh;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}}
+.detail{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px}
+@media (max-width:760px){.detail{grid-template-columns:1fr}}
+.detail img,.preview{width:100%;border-radius:12px;display:block}
+.preview{max-height:260px;object-fit:contain;background:var(--paper-2);margin:12px 0}
+dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;margin:14px 0;font-size:14px}
+dt{color:var(--ink-2)} dd{margin:0;overflow-wrap:anywhere}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12px;background:var(--paper-2);padding:1px 6px;border-radius:6px}
+form label.f{display:block;font-size:13px;color:var(--ink-2);margin:12px 0}
+form label.f input,form label.f select,form label.f textarea{margin-top:5px}
+.inline-form{display:flex;gap:8px;margin-top:8px} .inline-form input{flex:1}
+.people{display:grid;gap:10px;margin-top:16px}
+.people button{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;text-align:left;font-weight:500}
+.people button:hover{border-color:var(--sepia)}
+
+/* talk */
+.talk{display:grid;grid-template-columns:250px minmax(0,1fr);gap:16px;align-items:start}
+.threads{display:flex;flex-direction:column;gap:6px}
+.threads a{display:block;padding:10px 12px;border-radius:10px;text-decoration:none;color:var(--ink-2);border:1px solid transparent;font-size:14px}
+.threads a:hover{color:var(--ink)}
+.threads a.on{background:var(--card);border-color:var(--line);color:var(--ink);font-weight:500}
+@media (max-width:760px){.talk{grid-template-columns:1fr}.threads{flex-direction:row;overflow-x:auto}.threads a,.threads button{white-space:nowrap;flex:none}}
+.chat{display:flex;flex-direction:column}
+.msgs{display:flex;flex-direction:column;gap:14px;padding:4px 0 16px;overflow-y:auto;max-height:58vh;min-height:240px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg .body{background:var(--paper);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:8px 12px;max-width:100%;min-width:0;overflow-wrap:anywhere}
+.msg .who{font-size:12px;color:var(--ink-2);margin-bottom:2px} .msg .who b{color:var(--ink);font-weight:600;margin-right:4px}
+.msg.frank .body{background:color-mix(in srgb,var(--chrome) 13%,var(--card))}
+.demo-tag{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:6px}
+.composer{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.check{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--ink-2);cursor:pointer}
+.check input{width:auto;margin:0}
+
+/* lab + plan */
+.lab{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.lab{grid-template-columns:1fr}}
+.artist-card{--a:var(--sepia);border-top:4px solid var(--a)}
+.artist-card h3{font-size:26px}
+.stages{display:flex;gap:4px;margin:14px 0 10px}
+.stages span{flex:1;font-size:10.5px;text-align:center;padding:6px 2px;border-radius:6px;background:var(--paper-2);color:var(--ink-2)}
+.stages span.done{background:color-mix(in srgb,var(--a) 22%,transparent);color:var(--ink)}
+.stages span.cur{background:var(--a);color:#fff}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+@media (max-width:820px){.two{grid-template-columns:1fr}}
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+@media (max-width:820px){.board{grid-template-columns:1fr}}
+.col{background:var(--paper-2);border-radius:var(--r);padding:12px}
+.col h3{font-size:21px;margin:2px 4px 10px;display:flex;justify-content:space-between;align-items:baseline}
+.col h3 small{font-family:var(--ui);font-size:12px;color:var(--ink-2);font-weight:500}
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.tcard .t{flex:1;font-size:14px;line-height:1.35}
+.mv{display:flex;gap:4px}
+.mv button{border:1px solid var(--line);background:var(--paper);border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:13px;color:var(--ink-2)}
+.mv button:hover{color:var(--ink);border-color:var(--sepia)}
+.add-task{display:grid;grid-template-columns:minmax(0,1fr) 140px auto;gap:8px;margin-bottom:16px}
+@media (max-width:620px){.add-task{grid-template-columns:1fr 1fr}.add-task input{grid-column:1/-1}}
+
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:999px;z-index:60;font-size:14px;box-shadow:var(--shadow);max-width:calc(100% - 32px);text-align:center}
+.toast[hidden]{display:none}
+@media (min-width:821px){.toast{bottom:28px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#/home">The <em>Atelier</em></a>
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a href="#/home" data-r="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+    <a href="#/studio" data-r="studio"><svg viewBox="0 0 24 24"><path d="M19 3l2 2-9 9-3 1 1-3z"/><path d="M8 15c-3 0-4 2-4 5 2 0 5-1 5-4"/></svg><span>Studio</span></a>
+    <a href="#/gallery" data-r="gallery"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-10 9"/></svg><span>Gallery</span></a>
+    <a href="#/talk" data-r="talk"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Talk</span></a>
+    <a href="#/lab" data-r="lab"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7.5 14h9"/></svg><span>Lab</span></a>
+    <a href="#/plan" data-r="plan"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg><span>Plan</span></a>
+  </nav>
+  <div class="spacer"></div>
+  <button class="status" id="status" data-act="settings" title="Connection to Frank"><i></i><span>…</span></button>
+  <button class="me" id="me" data-act="who" title="Switch who's here"></button>
+</header>
+<main id="view"><div class="loading">Opening the studio…</div></main>
+<div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+<input type="file" id="file" accept="image/*" hidden>
+
+<script>
+(() => {
+'use strict';
+
+/* ============================================================
+   CONFIG — the only things Frank's wiring should need to touch.
+   Leave apiBase empty for demo mode (everything simulated, saved
+   on this device only). Can also be set from the Settings sheet
+   or by opening the site with ?api=https://your-frank-address
+   ============================================================ */
+const DEFAULT_API_BASE = '';
+
+const ARTISTS = [
+  { id:'vangogh',  name:'Van Gogh', role:'color, sky, brushwork',      color:'#2a4db3' },
+  { id:'leonardo', name:'Leonardo', role:'line, anatomy, notebooks',   color:'#8b5a2b' },
+  { id:'bosch',    name:'Bosch',    role:'chaos, creatures, triptychs', color:'#b5391d' },
+];
+const PEOPLE = [
+  { id:'marjorie', name:'Marjorie', initials:'MM', color:'#6d5bb8' },
+  { id:'ellie',    name:'Ellie',    initials:'E',  color:'#4f7a4a' },
+  { id:'tripp',    name:'Tripp',    initials:'T',  color:'#8b5a2b' },
+];
+const FRANK = { id:'frank', name:'Frank', initials:'F' };
+const PRESETS = [
+  { name:'Anatomy of Chaos', note:"Leonardo's anatomy with Bosch's creatures", w:{ leonardo:.85, bosch:.6,  vangogh:0 } },
+  { name:'Lines & Skies',    note:"Leonardo's line, Van Gogh's background",    w:{ leonardo:.8,  vangogh:.65, bosch:0 } },
+  { name:'Starry Delights',  note:"Bosch's chaos, Van Gogh's imagery",         w:{ bosch:.7,     vangogh:.7,  leonardo:0 } },
+  { name:'Pure Van Gogh',    note:'One painter only',                          w:{ vangogh:1,    leonardo:0,  bosch:0 } },
+  { name:'Pure Leonardo',    note:'One painter only',                          w:{ leonardo:1,   vangogh:0,   bosch:0 } },
+  { name:'Pure Bosch',       note:'One painter only',                          w:{ bosch:1,      vangogh:0,   leonardo:0 } },
+];
+const STAGES = [['baseline','Baseline'],['dataset','Dataset'],['training','Training'],['ready','Ready']];
+
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const now = () => new Date().toISOString();
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const clone = o => JSON.parse(JSON.stringify(o));
+const artist = id => ARTISTS.find(a => a.id === id);
+const person = id => id === 'frank' ? FRANK : (PEOPLE.find(p => p.id === id) || { id:'guest', name:'Guest', initials:'?', color:'#8a7f72' });
+const avatar = (id, sm) => id === 'frank'
+  ? `<span class="av frank${sm ? ' sm' : ''}">F</span>`
+  : `<span class="av${sm ? ' sm' : ''}" style="--c:${person(id).color}">${esc(person(id).initials)}</span>`;
+function ago(iso) {
+  if (!iso) return '';
+  const m = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (m < 1) return 'just now'; if (m < 60) return m + 'm ago';
+  const h = Math.round(m / 60); if (h < 24) return h + 'h ago';
+  return new Date(iso).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+}
+function titleFrom(idea) {
+  const words = (idea || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return 'Untitled';
+  const t = words.slice(0, 5).join(' ');
+  return t.charAt(0).toUpperCase() + t.slice(1) + (words.length > 5 ? '…' : '');
+}
+const recipeHtml = w => `<div class="recipe">${ARTISTS.filter(a => (w || {})[a.id] > 0).map(a =>
+  `<span><i style="--a:${a.color};width:${Math.round(8 + w[a.id] * 34)}px"></i>${a.name} ${(+w[a.id]).toFixed(2)}</span>`).join('') || '<span>No painters mixed</span>'}</div>`;
+
+/* ---------- storage (survives private mode by falling back to memory) ---------- */
+const store = (() => {
+  const mem = {}; let ok = false;
+  try { localStorage.setItem('atelier:_t', '1'); localStorage.removeItem('atelier:_t'); ok = true; } catch (e) {}
+  return {
+    get(k, d) {
+      if (k in mem) return mem[k];
+      if (ok) { try { const v = localStorage.getItem('atelier:' + k); if (v != null) return (mem[k] = JSON.parse(v)); } catch (e) {} }
+      return d;
+    },
+    set(k, v) {
+      mem[k] = v;
+      if (!ok) return true;
+      try { localStorage.setItem('atelier:' + k, JSON.stringify(v)); return true; } catch (e) { return false; }
+    }
+  };
+})();
+
+const settings = store.get('settings', { apiBase: DEFAULT_API_BASE, token: '' });
+const state = { me: store.get('me', null), jobs: [], gFilter: 'all' };
+const S = { idea:'', prompt:'', w:{ vangogh:.7, leonardo:0, bosch:0 }, count:'2', aspect:'square', seed:'', preset:null };
+
+/* ---------- placeholder painter (demo mode only; abstract, not a reproduction) ---------- */
+function rng(seed) {
+  let a = seed >>> 0;
+  return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+const paintCache = new Map();
+function paint(w, seedN, aspect) {
+  const key = JSON.stringify([w, seedN, aspect]);
+  if (paintCache.has(key)) return paintCache.get(key);
+  const r = rng(seedN || 1), f = n => n.toFixed(1), pick = a => a[(r() * a.length) | 0];
+  const vg = +w.vangogh || 0, le = +w.leonardo || 0, bo = +w.bosch || 0;
+  const [W, H] = aspect === 'landscape' ? [640, 448] : aspect === 'portrait' ? [480, 640] : [560, 560];
+  const night = vg > 0 && vg >= Math.max(le, bo);
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  s += `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${night ? '#16285f' : '#f1e4c6'}"/><stop offset=".62" stop-color="${night ? '#2f4fa6' : '#e6d3a8'}"/><stop offset="1" stop-color="${night ? '#5b6b3a' : '#d2b98a'}"/></linearGradient>`;
+  s += `<filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .3 0 0 0 0 .22 0 0 0 0 .12 0 0 0 .2 0"/></filter></defs>`;
+  s += `<rect width="${W}" height="${H}" fill="url(#g)"/><rect width="${W}" height="${H}" filter="url(#n)"/>`;
+  if (vg > 0) {
+    const sky = ['#f4c430','#f7e08a','#a9c2f5','#ffffff','#3d62c4','#e9b949'];
+    const nSw = Math.round(vg * 4) + 1;
+    for (let k = 0; k < nSw; k++) {
+      const cx = r() * W, cy = r() * H * .55, R = 40 + r() * 80;
+      for (let i = 0; i < 46; i++) {
+        const a = r() * 6.283, rr = R * (.25 + r() * .85), da = .35 + r() * .4;
+        const p = (t, m = 1) => [cx + Math.cos(t) * rr * m, cy + Math.sin(t) * rr * m];
+        const [x1, y1] = p(a), [qx, qy] = p(a + da / 2, 1.06), [x2, y2] = p(a + da);
+        s += `<path d="M${f(x1)} ${f(y1)}Q${f(qx)} ${f(qy)} ${f(x2)} ${f(y2)}" stroke="${pick(sky)}" stroke-width="${f(2.5 + r() * 4)}" fill="none" stroke-linecap="round" opacity="${(.5 + r() * .45).toFixed(2)}"/>`;
+      }
+    }
+    const field = ['#e2b33a','#c99a2e','#7d8f3c','#4e6a2e','#f0d36b'];
+    for (let i = 0; i < Math.round(vg * 140); i++) {
+      const x = r() * W, y = H * .62 + r() * H * .38, l = 8 + r() * 14, t = -1.2 + r() * .5;
+      s += `<line x1="${f(x)}" y1="${f(y)}" x2="${f(x + Math.cos(t) * l)}" y2="${f(y + Math.sin(t) * l)}" stroke="${pick(field)}" stroke-width="${f(2.5 + r() * 3)}" stroke-linecap="round" opacity=".85"/>`;
+    }
+  }
+  if (le > 0) {
+    const ink = night ? '#f1e4c6' : '#5a3a1c', cx = W / 2 + (r() - .5) * W * .15, cy = H * .5, op = (.3 + le * .45).toFixed(2);
+    for (let i = 0; i < Math.round(4 + le * 10); i++) {
+      s += `<ellipse cx="${f(cx + (r() - .5) * 60)}" cy="${f(cy + (r() - .5) * 80)}" rx="${f(30 + r() * W * .22)}" ry="${f(40 + r() * H * .28)}" transform="rotate(${f((r() - .5) * 40)} ${f(cx)} ${f(cy)})" fill="none" stroke="${ink}" stroke-width="${f(.6 + r() * 1.2)}" opacity="${op}"/>`;
+    }
+    for (let i = 0; i < Math.round(le * 220); i++) {
+      const a = r() * 6.283, d = r() * Math.min(W, H) * .32, x = cx + Math.cos(a) * d, y = cy + Math.sin(a) * d;
+      s += `<line x1="${f(x)}" y1="${f(y)}" x2="${f(x + 7)}" y2="${f(y - 7)}" stroke="${ink}" stroke-width=".7" opacity="${op}"/>`;
+    }
+    for (let l = 0; l < Math.round(le * 7); l++) {
+      let d = `M${f(W * .06)} ${f(H * .08 + l * 14)}`;
+      for (let c = 0; c < 15; c++) { d += `q${f(2 + r() * 2)} ${f(-3 - r() * 5)} ${f(5 + r() * 4)} 0`; if (r() < .2) d += `m${f(6 + r() * 6)} 0`; }
+      s += `<path d="${d}" fill="none" stroke="${ink}" stroke-width=".8" opacity="${op}"/>`;
+    }
+  }
+  if (bo > 0) {
+    const cols = ['#c2412b','#e88f9b','#f2ede0','#5f8a4a','#d8a53a','#8fb4c9'], dk = '#2d2a26';
+    if (bo > .4) {
+      const x = W * (.3 + r() * .4), y = H * .55;
+      s += `<path d="M${f(x - 30)} ${f(y + 60)}C${f(x - 40)} ${f(y - 20)} ${f(x - 10)} ${f(y - 70)} ${f(x)} ${f(y - 90)}C${f(x + 10)} ${f(y - 70)} ${f(x + 40)} ${f(y - 20)} ${f(x + 30)} ${f(y + 60)}Z" fill="#e8a0aa" stroke="${dk}" stroke-width="1.2" opacity=".9"/>`;
+    }
+    for (let i = 0; i < Math.round(bo * 34); i++) {
+      const x = r() * W, y = H * .35 + r() * H * .6, R = 4 + r() * 12;
+      for (let k = 0; k < 3; k++) { const a = Math.PI * (.15 + r() * .7); s += `<line x1="${f(x)}" y1="${f(y)}" x2="${f(x + Math.cos(a) * R * 1.8)}" y2="${f(y + Math.sin(a) * R * 1.8)}" stroke="${dk}" stroke-width="1.1"/>`; }
+      s += `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(R * (1 + r() * .6))}" ry="${f(R)}" fill="${pick(cols)}" stroke="${dk}" stroke-width="1"/>`;
+      if (r() < .6) s += `<circle cx="${f(x + R * .4)}" cy="${f(y - R * .3)}" r="${f(1.5 + r() * 1.5)}" fill="#fff" stroke="${dk}" stroke-width=".6"/>`;
+      if (r() < .35) s += `<path d="M${f(x)} ${f(y - R)}l${f(-3 + r() * 6)} ${f(-R - r() * 10)}" stroke="${dk}" stroke-width="1.2"/>`;
+    }
+  }
+  s += '</svg>';
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+  paintCache.set(key, url);
+  return url;
+}
+function artUrl(a) {
+  if (!a) return '';
+  if (a.url) return a.url.startsWith('/') && settings.apiBase ? settings.apiBase.replace(/\/+$/, '') + a.url : a.url;
+  if (a.render) return paint(a.render.w, a.render.seed, a.render.aspect);
+  return '';
+}
+
+/* ---------- demo data ---------- */
+const DEMO_MODEL = 'Demo sketch — Frank isn’t connected yet';
+function seedDb() {
+  const t = Date.now(), ts = m => new Date(t - m * 60000).toISOString();
+  const gen = (title, ideaBy, w, seedN, aspect, prompt, mins) => ({ id: uid(), kind:'generated', title, ideaBy, by:'frank', render:{ w, seed:seedN, aspect }, weights:w, prompt, model:DEMO_MODEL, seed:seedN, created:ts(mins), favs:[], ledger:null });
+  const msg = (by, text, mins) => ({ id: uid(), by, text, at: ts(mins), demo: by === 'frank' });
+  const task = (title, owner, status) => ({ id: uid(), title, owner, status });
+  return {
+    art: [
+      gen('Anatomy of Chaos', 'tripp', PRESETS[0].w, 4127, 'portrait', 'A human torso drawn as a Leonardo da Vinci anatomical notebook study, sepia ink and fine hatching, its chambers populated with Hieronymus Bosch hybrid creatures', 30),
+      gen('Lines & Skies', 'tripp', PRESETS[1].w, 88, 'landscape', 'A precise Renaissance figure study set against a swirling Van Gogh night sky, thick impasto, cobalt and chrome yellow', 55),
+      gen('Starry Delights', 'tripp', PRESETS[2].w, 905, 'square', 'A crowded Bosch garden of strange creatures painted with Van Gogh brushwork and palette, sunflowers and cypresses', 80),
+      gen('First swirl', 'marjorie', PRESETS[3].w, 31, 'square', 'Baseline test: oil painting in the style of Vincent van Gogh, thick impasto, swirling sky over a wheat field', 200),
+    ],
+    comments: {},
+    threads: [
+      { id:'general',  title:'Studio chat' },
+      { id:'next',     title:'Next steps' },
+      { id:'question', title:"The big question: who's the artist?" },
+    ],
+    messages: {
+      general:  [ msg('frank', "Welcome to the Atelier. Make something in the Studio, hang your own work in the Gallery, and use Next steps when you want to change the plan. I'm in demo mode until Tripp wires me up.", 240) ],
+      next:     [ msg('frank', "Here's the plan as it stands:\n1. Baseline prompt-only tests for all three painters\n2. One overnight Van Gogh training run\n3. Leonardo from the anatomy notebooks\n4. Bosch from tiled triptych crops\n5. First combination: Anatomy of Chaos\nWhat would you change?", 230) ],
+      question: [ msg('tripp', "If Frank paints it, but the idea was yours, and then you paint it again by hand… who's the artist?", 220) ],
+    },
+    tasks: [
+      task('Design the Atelier home base', 'tripp', 'done'),
+      task('Install ComfyUI and Krita on Voldemort', 'tripp', 'doing'),
+      task('Wire the Atelier to Frank', 'tripp', 'todo'),
+      task('Baseline: prompt-only tests for all three painters', 'frank', 'todo'),
+      task('Pick 10 favorite Van Gogh paintings for the dataset', 'marjorie', 'todo'),
+      task('Find Leonardo anatomy notebook pages', 'ellie', 'todo'),
+      task('Overnight SDXL Van Gogh training run', 'frank', 'todo'),
+      task('Tile Bosch triptychs into creature crops', 'frank', 'todo'),
+      task('First combination: Anatomy of Chaos', 'marjorie', 'todo'),
+    ],
+    lab: {
+      vangogh:  { stage:'baseline', images:0, target:150, base:'SDXL', version:null, note:'About 900 paintings exist. Prefer museum scans over WikiArt so the brushwork stays sharp.' },
+      leonardo: { stage:'baseline', images:0, target:80,  base:'SDXL', version:null, note:'Train on the anatomical notebooks, not the paintings: sepia ink, hatching, mirror script.' },
+      bosch:    { stage:'baseline', images:0, target:200, base:'SDXL', version:null, note:'Only about 25 works, but the triptychs are dense. Tile them into crops of single creatures and scenes.' },
+    },
+    windows: [],
+  };
+}
+let db = store.get('db', null) || seedDb();
+const saveDb = () => store.set('db', db);
+saveDb();
+const mockJobs = {};
+
+function composeMock(idea, w) {
+  const parts = [];
+  if (w.leonardo > .2) parts.push('drawn as a Leonardo da Vinci anatomical notebook study, sepia ink, fine hatching, mirror-script annotations');
+  if (w.bosch > .2) parts.push('populated with Hieronymus Bosch hybrid creatures and surreal miniature scenes');
+  if (w.vangogh > .2) parts.push('set against a Van Gogh swirling sky, thick impasto, cobalt and chrome yellow');
+  return `${(idea || '').trim() || 'An imagined scene'}, ${parts.join(', ') || 'oil painting'}`;
+}
+function frankReply(text, tid) {
+  const t = text.toLowerCase();
+  if (/train|lora|window/.test(t)) return "Training happens in a scheduled window: I park my language model, train for an hour or two, then come back. I'll be slow on Telegram while it runs. You can request a window from the Lab.";
+  if (/bosch/.test(t)) return "Bosch only left about 25 works, but the triptychs are packed. I'll cut them into crops of single creatures and scenes, which gives a few hundred training images.";
+  if (/leonardo|da ?vinci|anatomy/.test(t)) return "For Leonardo I'll learn from the anatomy notebooks rather than the paintings: sepia ink, hatching, the backwards handwriting. That's the look behind the anatomy idea.";
+  if (/van ?gogh|vango|swirl|sky/.test(t)) return "Van Gogh is the easy one to start with. There are hundreds of paintings to learn from, so his run goes first.";
+  if (tid === 'question' || /artist|whose|credit|idea|copy/.test(t)) return "Every piece here records whose idea it was, the recipe, and the seed. That record can say who did what. It can't say who the artist is. That part is yours to argue.";
+  return "Noted. Once I'm properly connected, this is where I'll answer for real.";
+}
+function runMockJob(job, p) {
+  const steps = 5 + p.count * 2; let step = 0;
+  const tick = () => {
+    step++;
+    job.status = 'running';
+    job.progress = Math.min(1, step / steps);
+    job.message = step < 2 ? 'Loading the recipe…' : step < steps - 1 ? 'Painting…' : 'Varnishing…';
+    if (step < steps) return setTimeout(tick, 450);
+    const base = p.seed ?? Math.floor(Math.random() * 1e6);
+    job.art = Array.from({ length: p.count }, (_, i) => ({
+      id: uid(), kind:'generated', title: p.count > 1 ? `${p.title.replace(/…$/, '')} · ${['I','II','III','IV'][i]}` : p.title, ideaBy: p.ideaBy, by:'frank', idea: p.idea,
+      render:{ w:p.weights, seed: base + i, aspect:p.aspect }, weights:p.weights, prompt:p.prompt, model:DEMO_MODEL, seed: base + i, created: now(), favs:[], ledger:null,
+    }));
+    db.art.unshift(...clone(job.art).reverse());
+    saveDb();
+    job.status = 'done'; job.progress = 1; job.message = '';
+  };
+  setTimeout(tick, 500);
+}
+const mock = {
+  async status() { await wait(60); return { state: db.windows.some(w => w.status === 'running') ? 'training' : 'online', gpu:'Simulated', nextWindow: (db.windows.find(w => w.status === 'scheduled') || {}).when || null, demo:true }; },
+  async listArt() { await wait(120); return clone(db.art); },
+  async getArt(id) { await wait(40); const a = db.art.find(x => x.id === id); if (!a) throw new Error('That piece is gone.'); return clone(a); },
+  async uploadArt(p) {
+    await wait(250);
+    const a = { id: uid(), kind: p.kind, title: p.title, by: p.by, ideaBy: p.by, url: p.dataUrl, note: p.note, basedOn: p.basedOn || null, created: now(), favs: [], ledger: null };
+    db.art.unshift(a);
+    if (!saveDb()) { db.art.shift(); saveDb(); throw new Error('This device is out of room for demo uploads. Connect Frank to store art for real.'); }
+    return clone(a);
+  },
+  async favorite(id, p) { const a = db.art.find(x => x.id === id); a.favs = p.on ? [...new Set([...(a.favs || []), p.by])] : (a.favs || []).filter(x => x !== p.by); saveDb(); return clone(a); },
+  async comments(id) { await wait(40); return clone(db.comments[id] || []); },
+  async addComment(id, p) { (db.comments[id] = db.comments[id] || []).push({ id: uid(), by: p.by, text: p.text, at: now() }); saveDb(); return true; },
+  async compose(p) { await wait(800); return { prompt: composeMock(p.idea, p.weights) }; },
+  async generate(p) { await wait(120); const job = { id: uid(), status:'queued', progress:0, message:'Waiting for the easel…', art:[] }; mockJobs[job.id] = job; runMockJob(job, p); return clone(job); },
+  async job(id) { await wait(30); return clone(mockJobs[id]); },
+  async threads() { await wait(60); return clone(db.threads); },
+  async newThread(p) { const t = { id: uid(), title: p.title }; db.threads.push(t); db.messages[t.id] = []; saveDb(); return t; },
+  async messages(tid) { await wait(60); return clone(db.messages[tid] || []); },
+  async postMessage(tid, p) { (db.messages[tid] = db.messages[tid] || []).push({ id: uid(), by: p.by, text: p.text, at: now() }); saveDb(); return true; },
+  async askFrank(tid, p) { await wait(1300); const m = { id: uid(), by:'frank', text: frankReply(p.text, tid), at: now(), demo:true }; db.messages[tid].push(m); saveDb(); return m; },
+  async listTasks() { await wait(60); return clone(db.tasks); },
+  async saveTask(t) { if (t.id) { const i = db.tasks.findIndex(x => x.id === t.id); db.tasks[i] = { ...db.tasks[i], ...t }; } else { t.id = uid(); db.tasks.push(t); } saveDb(); return clone(t); },
+  async lab() { await wait(80); return { artists: clone(db.lab), windows: clone(db.windows) }; },
+  async requestWindow(p) { const w = { id: uid(), ...p, status:'requested', at: now() }; db.windows.unshift(w); saveDb(); return w; },
+};
+
+/* ============================================================
+   API ADAPTER — demo routes to `mock`; otherwise REST calls to
+   Frank. Endpoint shapes are documented in API.md.
+   ============================================================ */
+const api = {
+  get demo() { return !settings.apiBase; },
+  async req(method, path, body) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 20000);
+    try {
+      const headers = { 'Content-Type':'application/json' };
+      if (settings.token) headers.Authorization = 'Bearer ' + settings.token;
+      const r = await fetch(settings.apiBase.replace(/\/+$/, '') + path, { method, headers, signal: ctl.signal, body: body ? JSON.stringify(body) : undefined });
+      if (!r.ok) { let m = 'Frank said ' + r.status; try { const j = await r.json(); m = j.error || j.detail || m; } catch (e) {} throw new Error(m); }
+      return r.status === 204 ? null : r.json();
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('Frank took too long to answer.');
+      if (e instanceof TypeError) throw new Error("Can't reach Frank. Check the address in Settings.");
+      throw e;
+    } finally { clearTimeout(timer); }
+  },
+  status()            { return this.demo ? mock.status()            : this.req('GET',  '/api/status'); },
+  listArt()           { return this.demo ? mock.listArt()           : this.req('GET',  '/api/art'); },
+  getArt(id)          { return this.demo ? mock.getArt(id)          : this.req('GET',  `/api/art/${id}`); },
+  uploadArt(p)        { return this.demo ? mock.uploadArt(p)        : this.req('POST', '/api/art', p); },
+  favorite(id, p)     { return this.demo ? mock.favorite(id, p)     : this.req('POST', `/api/art/${id}/favorite`, p); },
+  comments(id)        { return this.demo ? mock.comments(id)        : this.req('GET',  `/api/art/${id}/comments`); },
+  addComment(id, p)   { return this.demo ? mock.addComment(id, p)   : this.req('POST', `/api/art/${id}/comments`, p); },
+  compose(p)          { return this.demo ? mock.compose(p)          : this.req('POST', '/api/compose', p); },
+  generate(p)         { return this.demo ? mock.generate(p)         : this.req('POST', '/api/generate', p); },
+  job(id)             { return this.demo ? mock.job(id)             : this.req('GET',  `/api/jobs/${id}`); },
+  threads()           { return this.demo ? mock.threads()           : this.req('GET',  '/api/threads'); },
+  newThread(p)        { return this.demo ? mock.newThread(p)        : this.req('POST', '/api/threads', p); },
+  messages(tid)       { return this.demo ? mock.messages(tid)       : this.req('GET',  `/api/threads/${tid}/messages`); },
+  postMessage(tid, p) { return this.demo ? mock.postMessage(tid, p) : this.req('POST', `/api/threads/${tid}/messages`, p); },
+  askFrank(tid, p)    { return this.demo ? mock.askFrank(tid, p)    : this.req('POST', `/api/threads/${tid}/ask`, p); },
+  listTasks()         { return this.demo ? mock.listTasks()         : this.req('GET',  '/api/tasks'); },
+  saveTask(t)         { return this.demo ? mock.saveTask(t)         : (t.id ? this.req('PUT', `/api/tasks/${t.id}`, t) : this.req('POST', '/api/tasks', t)); },
+  lab()               { return this.demo ? mock.lab()               : this.req('GET',  '/api/lab'); },
+  requestWindow(p)    { return this.demo ? mock.requestWindow(p)    : this.req('POST', '/api/lab/windows', p); },
+};
+
+/* ---------- ui primitives ---------- */
+const view = $('#view'), modalEl = $('#modal'), sheet = $('#sheet');
+let toastTimer;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
+function openModal(html, cls = '') { sheet.className = 'sheet ' + cls; sheet.innerHTML = `<button class="x" data-act="close" aria-label="Close">×</button>` + html; modalEl.hidden = false; document.body.style.overflow = 'hidden'; }
+function closeModal() { modalEl.hidden = true; sheet.innerHTML = ''; document.body.style.overflow = ''; }
+modalEl.addEventListener('click', e => { if (e.target === modalEl && !modalEl.dataset.locked) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalEl.hidden && !modalEl.dataset.locked) closeModal(); });
+
+function renderMe() { $('#me').innerHTML = avatar(state.me) + `<span class="nm">${esc(person(state.me).name)}</span>`; }
+async function updateStatus() {
+  const el = $('#status');
+  if (api.demo) { el.className = 'status demo'; el.querySelector('span').textContent = 'Demo mode'; return; }
+  try {
+    const st = await api.status();
+    const map = { online:['ok','Frank online'], training:['warn','Frank training'], offline:['off','Frank offline'] };
+    const [c, l] = map[st.state] || ['off', 'Frank offline'];
+    el.className = 'status ' + c; el.querySelector('span').textContent = l;
+  } catch (e) { el.className = 'status off'; el.querySelector('span').textContent = "Can't reach Frank"; }
+}
+
+/* ---------- views ---------- */
+function statusBlock(st) {
+  if (st.demo) return `<div class="frank-state">${avatar('frank')}<div><b>Demo mode</b><div class="muted sm">Everything works, but Frank is simulated and art is saved on this device only.</div></div></div><button class="btn sm" data-act="settings">Connect Frank</button>`;
+  const map = { online:['Online','Ready to talk and paint.'], training:['In a training window','Slow until the window ends.'], offline:['Offline','The studio still works; Frank will catch up.'] };
+  const [l, d] = map[st.state] || map.offline;
+  return `<div class="frank-state">${avatar('frank')}<div><b>${l}</b><div class="muted sm">${d}</div></div></div>
+    <dl><dt>GPU</dt><dd>${esc(st.gpu || '—')}</dd><dt>Next window</dt><dd>${esc(st.nextWindow || 'None scheduled')}</dd></dl>`;
+}
+const taskRow = t => `<div class="task">${avatar(t.owner, true)}<span class="t">${esc(t.title)}</span><span class="tag ${t.status}">${t.status === 'doing' ? 'doing' : 'to do'}</span></div>`;
+
+async function renderHome() {
+  const [st, art, tasks, qmsgs] = await Promise.all([api.status().catch(() => ({ state:'offline' })), api.listArt(), api.listTasks(), api.messages('question').catch(() => [])]);
+  const open = tasks.filter(t => t.status !== 'done').sort((a, b) => (b.status === 'doing') - (a.status === 'doing'));
+  const h = new Date().getHours(), greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+  view.innerHTML = `
+  <section class="hero">
+    <p class="eyebrow">A studio for three painters and one machine</p>
+    <h1>${greet}, ${esc(person(state.me).name)}.</h1>
+    <p class="lede">Mix Van Gogh, Leonardo and Bosch with Frank, hang what you make next to what you paint by hand, then argue about who made it.</p>
+    <div class="row"><a class="btn primary" href="#/studio">Start a piece</a><button class="btn" data-act="upload">Add your own art</button></div>
+  </section>
+  <div class="grid home">
+    <article class="card"><div class="card-h"><h3>Frank</h3></div>${statusBlock(st)}</article>
+    <article class="card"><div class="card-h"><h3>Next up</h3><a class="link" href="#/plan">Plan →</a></div>
+      ${open.slice(0, 4).map(taskRow).join('') || '<p class="muted">Nothing open. Add something in Plan.</p>'}</article>
+    <article class="card question"><p class="eyebrow">The big question</p>
+      <h3>If Frank paints it, but the idea is yours, who's the artist?</h3>
+      <p class="muted sm">${qmsgs.length} ${qmsgs.length === 1 ? 'reply' : 'replies'} so far</p>
+      <a class="btn sm" href="#/talk/question">Weigh in</a></article>
+    <article class="card wide"><div class="card-h"><h3>Latest on the wall</h3><a class="link" href="#/gallery">Gallery →</a></div>
+      ${art.length ? `<div class="strip">${art.slice(0, 10).map(a => `<button class="thumb" data-act="open-art" data-id="${a.id}"><img src="${artUrl(a)}" alt="${esc(a.title)}" loading="lazy"></button>`).join('')}</div>` : '<div class="empty">Nothing hanging yet.</div>'}</article>
+  </div>`;
+}
+
+const mixRow = (a, info) => {
+  const v = +S.w[a.id] || 0, ready = info && info.stage === 'ready';
+  return `<div class="mix" style="--a:${a.color}"><div class="mix-h"><b>${a.name}</b><span class="muted sm">${a.role}</span><span class="badge ${ready ? 'ready' : ''}">${ready ? 'trained ' + esc(info.version || '') : 'prompt only'}</span></div>
+    <div class="mix-r"><input type="range" min="0" max="100" value="${Math.round(v * 100)}" data-w="${a.id}" aria-label="${a.name} weight"><output>${v.toFixed(2)}</output></div></div>`;
+};
+function queueHtml() {
+  if (!state.jobs.length) return `<div class="empty sm">Nothing on the easel yet.<br>Pick a mix and hit <b>Paint it</b>.</div>`;
+  return state.jobs.map(j => `<div class="job">
+    <div class="row between"><b>${esc(j.req.title)}</b><span class="tag ${j.status}">${esc(j.status)}</span></div>
+    ${recipeHtml(j.req.weights)}
+    ${j.status !== 'done' && j.status !== 'failed' ? `<div class="bar"><i style="width:${Math.round((j.progress || 0) * 100)}%"></i></div><div class="muted sm">${esc(j.message || '')}</div>` : ''}
+    ${j.status === 'failed' ? `<div class="muted sm">${esc(j.message || 'Something went wrong.')}</div>` : ''}
+    ${j.art && j.art.length ? `<div class="results">${j.art.map(a => `<button class="thumb" data-act="open-art" data-id="${a.id}"><img src="${artUrl(a)}" alt="${esc(a.title)}"></button>`).join('')}</div>` : ''}
+  </div>`).join('');
+}
+const refreshQueue = () => { const q = $('#queue'); if (q) q.innerHTML = queueHtml(); };
+
+async function renderStudio() {
+  const lab = await api.lab().catch(() => ({ artists:{} }));
+  view.innerHTML = `
+  <div class="page-h"><div><p class="eyebrow">Studio</p><h1>Make a piece</h1></div><span class="muted sm">Credited to ${esc(person(state.me).name)}</span></div>
+  <div class="studio">
+    <section class="card">
+      <label class="lbl first" for="idea">Your idea</label>
+      <textarea id="idea" data-bind="idea" rows="3" placeholder="e.g. a heart drawn like a map, with tiny creatures living in the chambers">${esc(S.idea)}</textarea>
+      <div class="row between" style="margin-top:8px"><span class="muted sm">Plain words are fine. Frank can turn them into a prompt.</span><button class="btn sm" data-act="compose">✦ Let Frank write the prompt</button></div>
+      <label class="lbl" for="prompt">Prompt Frank will paint</label>
+      <textarea id="prompt" data-bind="prompt" rows="4" placeholder="Frank fills this in, or write your own">${esc(S.prompt)}</textarea>
+      <span class="lbl">Recipes</span>
+      <div class="chips">${PRESETS.map((p, i) => `<button class="chip ${S.preset === i ? 'on' : ''}" data-act="preset" data-i="${i}" title="${esc(p.note)}">${esc(p.name)}</button>`).join('')}</div>
+      <span class="lbl">The mix</span>
+      <div id="mixer">${ARTISTS.map(a => mixRow(a, (lab.artists || {})[a.id])).join('')}</div>
+      <div class="opts">
+        <label>Pieces<select data-bind="count">${['1','2','3','4'].map(n => `<option ${S.count === n ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        <label>Shape<select data-bind="aspect">${[['square','Square'],['portrait','Tall'],['landscape','Wide']].map(([v, l]) => `<option value="${v}" ${S.aspect === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+        <label>Seed<span class="seed"><input id="seed" data-bind="seed" inputmode="numeric" placeholder="random" value="${esc(S.seed)}"><button class="icon" data-act="dice" title="Pick a random seed" aria-label="Random seed">⚄</button></span></label>
+      </div>
+      <button class="btn primary block" data-act="generate">Paint it</button>
+    </section>
+    <section class="card"><div class="card-h"><h3>On the easel</h3><a class="link" href="#/gallery">Gallery →</a></div><div id="queue">${queueHtml()}</div></section>
+  </div>`;
+}
+
+async function renderGallery() {
+  const art = await api.listArt();
+  const f = state.gFilter;
+  const list = art.filter(a => f === 'all' || (f === 'fav' ? (a.favs || []).includes(state.me) : a.kind === f));
+  const filters = [['all','Everything'],['generated',"Frank's"],['hand','Hand-made'],['reference','References'],['fav','My favorites']];
+  view.innerHTML = `
+  <div class="page-h"><div><p class="eyebrow">Gallery</p><h1>The wall</h1></div><button class="btn primary" data-act="upload">Add your own art</button></div>
+  <div class="chips filters">${filters.map(([v, l]) => `<button class="chip ${f === v ? 'on' : ''}" data-act="filter" data-f="${v}">${l}</button>`).join('')}</div>
+  ${list.length ? `<div class="wall">${list.map(a => `
+    <figure class="art" data-act="open-art" data-id="${a.id}">
+      <img src="${artUrl(a)}" alt="${esc(a.title)}" loading="lazy">
+      <figcaption><b>${esc(a.title)}</b>
+        <span class="muted sm">${a.kind === 'generated' ? `Frank · idea by ${esc(person(a.ideaBy).name)}` : a.kind === 'reference' ? `Reference · added by ${esc(person(a.by).name)}` : `By hand · ${esc(person(a.by).name)}`}${(a.favs || []).length ? ` · ♥ ${a.favs.length}` : ''}</span>
+        ${a.weights ? recipeHtml(a.weights) : ''}
+      </figcaption>
+    </figure>`).join('')}</div>`
+  : `<div class="empty">${f === 'hand' ? 'No hand-made work yet. Paint one of Frank’s pieces yourself and hang it here.' : f === 'fav' ? 'Tap ♥ on a piece to keep it here.' : 'Nothing here yet.'}</div>`}`;
+}
+
+async function openArt(id) {
+  const [a, comments] = await Promise.all([api.getArt(id), api.comments(id)]);
+  const isFav = (a.favs || []).includes(state.me);
+  const made = a.kind === 'generated' ? 'Frank' : person(a.by).name;
+  openModal(`<div class="detail">
+    <div><img src="${artUrl(a)}" alt="${esc(a.title)}"></div>
+    <div>
+      <p class="eyebrow">${a.kind === 'generated' ? 'Made with Frank' : a.kind === 'reference' ? 'Reference' : 'Made by hand'}</p>
+      <h2>${esc(a.title)}</h2>
+      <dl>
+        <dt>Idea</dt><dd>${esc(person(a.ideaBy || a.by).name)}</dd>
+        <dt>Made by</dt><dd>${esc(made)}</dd>
+        ${a.weights ? `<dt>Recipe</dt><dd>${recipeHtml(a.weights)}</dd>` : ''}
+        ${a.prompt ? `<dt>Prompt</dt><dd>${esc(a.prompt)}</dd>` : ''}
+        ${a.note ? `<dt>Note</dt><dd>${esc(a.note)}</dd>` : ''}
+        ${a.basedOn ? `<dt>Based on</dt><dd><a href="#" data-act="open-art" data-id="${esc(a.basedOn)}">Frank's original →</a></dd>` : ''}
+        ${a.seed != null ? `<dt>Seed</dt><dd><code>${esc(a.seed)}</code></dd>` : ''}
+        ${a.model ? `<dt>Model</dt><dd>${esc(a.model)}</dd>` : ''}
+        <dt>Ledger</dt><dd>${a.ledger ? `<code>${esc(a.ledger)}</code>` : '<span class="muted">Not recorded yet</span>'}</dd>
+        <dt>Added</dt><dd>${esc(ago(a.created))}</dd>
+      </dl>
+      <div class="row">
+        <button class="btn sm" data-act="fav" data-id="${a.id}" data-on="${isFav ? 0 : 1}">${isFav ? '♥ Favorited' : '♡ Favorite'}</button>
+        ${a.kind === 'generated' ? `<button class="btn sm" data-act="remix" data-id="${a.id}">Remix in Studio</button><button class="btn sm" data-act="by-hand" data-id="${a.id}" data-title="${esc(a.title)}">I'll paint this by hand</button>` : ''}
+      </div>
+      <h4>Talk about it</h4>
+      <div class="comments" style="display:flex;flex-direction:column;gap:12px">${comments.map(msgHtml).join('') || '<p class="muted sm">No comments yet.</p>'}</div>
+      <form class="inline-form" data-form="comment" data-id="${a.id}"><input name="t" placeholder="What do you see?" autocomplete="off" aria-label="Comment"><button class="btn primary sm">Post</button></form>
+    </div></div>`);
+}
+
+const msgHtml = m => `<div class="msg ${m.by === 'frank' ? 'frank' : ''}">${avatar(m.by, true)}<div class="body"><div class="who"><b>${esc(person(m.by).name)}</b>${esc(ago(m.at))}${m.demo ? '<span class="demo-tag">demo</span>' : ''}</div>${esc(m.text).replace(/\n/g, '<br>')}</div></div>`;
+
+async function renderTalk(tidArg) {
+  const threads = await api.threads();
+  const tid = threads.some(t => t.id === tidArg) ? tidArg : threads[0].id;
+  const thread = threads.find(t => t.id === tid);
+  const msgs = await api.messages(tid);
+  view.innerHTML = `
+  <div class="page-h"><div><p class="eyebrow">Talk</p><h1>Around the table</h1></div></div>
+  <div class="talk">
+    <aside class="threads">${threads.map(t => `<a href="#/talk/${t.id}" class="${t.id === tid ? 'on' : ''}">${esc(t.title)}</a>`).join('')}
+      <button class="btn sm ghost" data-act="new-thread">+ New thread</button></aside>
+    <section class="card chat">
+      <div class="card-h"><h3>${esc(thread.title)}</h3></div>
+      <div class="msgs" id="msgs">${msgs.map(msgHtml).join('') || '<p class="muted sm">Start the conversation.</p>'}</div>
+      <form class="composer" data-form="msg" data-tid="${tid}">
+        <textarea name="t" rows="2" placeholder="Say something… start with @Frank to ask him" aria-label="Message"></textarea>
+        <div class="row between"><label class="check"><input type="checkbox" name="frank" ${tid === 'next' ? 'checked' : ''}> Ask Frank to answer</label><button class="btn primary">Send</button></div>
+      </form>
+    </section>
+  </div>`;
+  const box = $('#msgs'); box.scrollTop = box.scrollHeight;
+}
+async function refreshMsgs(tid) {
+  const box = $('#msgs'); if (!box) return;
+  const msgs = await api.messages(tid);
+  box.innerHTML = msgs.map(msgHtml).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function renderLab() {
+  const lab = await api.lab();
+  const wins = lab.windows || [];
+  view.innerHTML = `
+  <div class="page-h"><div><p class="eyebrow">Lab</p><h1>Teaching Frank each painter</h1></div></div>
+  <div class="note">Each painter gets a small add-on model (a <b>LoRA</b>) trained on their real work. Training runs in a <b>scheduled window</b>: Frank parks his language model on the GPU for an hour or two, so he's slow on Telegram while it runs. Once a painter shows <b>Ready</b>, the Studio mixes the trained version instead of prompt-only.</div>
+  <div class="lab">${ARTISTS.map(a => {
+    const x = (lab.artists || {})[a.id] || { stage:'baseline', images:0, target:100 };
+    const si = STAGES.findIndex(s => s[0] === x.stage);
+    const pct = Math.min(100, Math.round((x.images || 0) / (x.target || 1) * 100));
+    return `<article class="card artist-card" style="--a:${a.color}">
+      <p class="eyebrow">${esc(a.role)}</p><h3>${a.name}</h3>
+      <div class="stages">${STAGES.map(([k, l], i) => `<span class="${i < si ? 'done' : i === si ? 'cur' : ''}">${l}</span>`).join('')}</div>
+      <div class="row between sm"><span>Training images</span><span class="muted">${x.images || 0} / ${x.target}</span></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <dl><dt>Base</dt><dd>${esc(x.base || 'SDXL')}</dd><dt>Version</dt><dd>${esc(x.version || 'Not trained yet')}</dd></dl>
+      <p class="muted sm" style="margin:0">${esc(x.note || '')}</p>
+    </article>`; }).join('')}</div>
+  <div class="two">
+    <section class="card"><div class="card-h"><h3>Request a training window</h3></div>
+      <form data-form="window">
+        <label class="f">Painter<select name="artist">${ARTISTS.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}</select></label>
+        <label class="f">Model<select name="base"><option value="SDXL">SDXL (better brushwork, mixes with the others)</option><option value="SD1.5">SD 1.5 (quick test run)</option></select></label>
+        <label class="f">When<select name="when"><option>Tonight after midnight</option><option>Tomorrow night</option><option>This weekend</option></select></label>
+        <label class="f">Note for Frank<input name="note" placeholder="optional"></label>
+        <button class="btn primary">Request window</button>
+      </form>
+    </section>
+    <section class="card"><div class="card-h"><h3>Windows</h3></div>
+      ${wins.length ? wins.map(w => `<div class="task">${avatar(w.by, true)}<span class="t">${esc(artist(w.artist)?.name || w.artist)} · ${esc(w.base)}<br><span class="muted sm">${esc(w.when)}${w.note ? ' · ' + esc(w.note) : ''}</span></span><span class="tag ${esc(w.status)}">${esc(w.status)}</span></div>`).join('') : '<div class="empty sm">No windows yet. Requests go to Tripp and Frank to schedule.</div>'}
+    </section>
+  </div>`;
+}
+
+async function renderPlan() {
+  const tasks = await api.listTasks();
+  const cols = [['todo','To do'],['doing','Doing'],['done','Done']];
+  view.innerHTML = `
+  <div class="page-h"><div><p class="eyebrow">Plan</p><h1>Next steps</h1></div><a class="btn sm" href="#/talk/next">Discuss the plan</a></div>
+  <form class="add-task" data-form="task">
+    <input name="title" placeholder="Add a step…" required aria-label="New step">
+    <select name="owner" aria-label="Who">${[...PEOPLE, FRANK].map(p => `<option value="${p.id}" ${p.id === state.me ? 'selected' : ''}>${esc(p.name)}</option>`).join('')}</select>
+    <button class="btn primary">Add</button>
+  </form>
+  <div class="board">${cols.map(([k, l], ci) => {
+    const list = tasks.filter(t => t.status === k);
+    return `<section class="col"><h3>${l}<small>${list.length}</small></h3>
+      ${list.map(t => `<div class="tcard">${avatar(t.owner, true)}<span class="t">${esc(t.title)}</span><span class="mv">
+        ${ci > 0 ? `<button data-act="move" data-id="${t.id}" data-to="${cols[ci - 1][0]}" aria-label="Move back">←</button>` : ''}
+        ${ci < 2 ? `<button data-act="move" data-id="${t.id}" data-to="${cols[ci + 1][0]}" aria-label="Move forward">→</button>` : ''}
+      </span></div>`).join('') || '<p class="muted sm" style="margin:4px">Empty</p>'}
+    </section>`; }).join('')}</div>`;
+}
+
+/* ---------- sheets ---------- */
+function openWho(first) {
+  openModal(`<p class="eyebrow">${first ? 'Welcome to the Atelier' : 'Switch'}</p><h2>Who's here?</h2>
+    <p class="muted sm">This only labels your ideas and comments on this device. Frank's studio code does the real sign-in.</p>
+    <div class="people">${PEOPLE.map(p => `<button data-act="pick-who" data-id="${p.id}">${avatar(p.id)}${esc(p.name)}</button>`).join('')}</div>`, 'narrow');
+  if (first) modalEl.dataset.locked = '1';
+}
+function openSettings() {
+  openModal(`<p class="eyebrow">Settings</p><h2>Connect to Frank</h2>
+    <p class="muted sm">Leave the address blank to stay in demo mode. Everything works, but Frank is simulated and art stays on this device.</p>
+    <form data-form="settings">
+      <label class="f">Frank's address<input name="apiBase" placeholder="https://voldemort.your-tailnet.ts.net" value="${esc(settings.apiBase)}" autocomplete="off" inputmode="url"></label>
+      <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off"></label>
+      <div class="row"><button class="btn primary">Save</button><button type="button" class="btn" data-act="test-conn">Test connection</button></div>
+    </form>
+    <h4>Demo data</h4>
+    <button class="btn sm ghost" data-act="reset-demo">Reset demo data on this device</button>`, 'narrow');
+}
+
+/* ---------- actions ---------- */
+let pendingUpload = null;
+const acts = {
+  close: closeModal,
+  settings: openSettings,
+  who: () => openWho(false),
+  'pick-who': el => { state.me = el.dataset.id; store.set('me', state.me); delete modalEl.dataset.locked; closeModal(); renderMe(); route(); },
+  upload: () => $('#file').click(),
+  filter: el => { state.gFilter = el.dataset.f; renderGallery(); },
+  'open-art': el => openArt(el.dataset.id),
+  fav: async el => { await api.favorite(el.dataset.id, { by: state.me, on: el.dataset.on === '1' }); await openArt(el.dataset.id); if (currentRoute() === 'gallery') renderGallery(); },
+  remix: async el => {
+    const a = await api.getArt(el.dataset.id);
+    Object.assign(S, { idea: a.idea || '', prompt: a.prompt || '', w: { vangogh:0, leonardo:0, bosch:0, ...(a.weights || {}) }, seed: '', preset: null });
+    closeModal();
+    if (currentRoute() === 'studio') renderStudio(); else location.hash = '#/studio';
+    toast('Recipe loaded. Change something and paint again.');
+  },
+  'by-hand': async el => { await api.saveTask({ title: `Paint “${el.dataset.title}” by hand`, owner: state.me, status: 'todo' }); toast('Added to your plan.'); },
+  preset: el => {
+    const i = +el.dataset.i; S.preset = i; S.w = { ...PRESETS[i].w };
+    document.querySelectorAll('[data-act=preset]').forEach(c => c.classList.toggle('on', +c.dataset.i === i));
+    ARTISTS.forEach(a => { const r = document.querySelector(`[data-w=${a.id}]`); if (r) { r.value = Math.round(S.w[a.id] * 100); r.nextElementSibling.textContent = (+S.w[a.id]).toFixed(2); } });
+  },
+  compose: async el => {
+    if (!S.idea.trim()) return toast('Write your idea first.');
+    el.disabled = true; el.textContent = 'Frank is thinking…';
+    try { const r = await api.compose({ idea: S.idea, weights: S.w, by: state.me }); S.prompt = r.prompt; const p = $('#prompt'); if (p) p.value = r.prompt; }
+    finally { el.disabled = false; el.textContent = '✦ Let Frank write the prompt'; }
+  },
+  dice: () => { S.seed = String(Math.floor(Math.random() * 1e6)); const s = $('#seed'); if (s) s.value = S.seed; },
+  generate: async el => {
+    if (!S.idea.trim() && !S.prompt.trim()) return toast('Start with an idea.');
+    if (!ARTISTS.some(a => S.w[a.id] > 0)) return toast('Mix in at least one painter.');
+    const req = {
+      title: S.preset != null && !S.idea.trim() ? PRESETS[S.preset].name : titleFrom(S.idea || S.prompt),
+      idea: S.idea, prompt: S.prompt.trim() || composeMock(S.idea, S.w), weights: { ...S.w },
+      count: +S.count, aspect: S.aspect, seed: S.seed ? +S.seed : null, ideaBy: state.me,
+    };
+    el.disabled = true;
+    try { const job = await api.generate(req); state.jobs.unshift({ ...job, req }); refreshQueue(); pollJob(job.id); }
+    finally { el.disabled = false; }
+  },
+  'new-thread': () => openModal(`<h2>New thread</h2><form data-form="thread"><label class="f">What's it about?<input name="title" required placeholder="e.g. Ideas for the next combo"></label><button class="btn primary">Start it</button></form>`, 'narrow'),
+  move: async el => { await api.saveTask({ id: el.dataset.id, status: el.dataset.to }); renderPlan(); },
+  'test-conn': async () => {
+    const f = sheet.querySelector('form[data-form=settings]');
+    const prev = { ...settings };
+    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = f.elements.token.value.trim();
+    if (!settings.apiBase) { Object.assign(settings, prev); return toast('No address entered, so this stays in demo mode.'); }
+    try { const st = await api.status(); toast(`Connected. Frank is ${st.state || 'there'}.`); }
+    catch (e) { toast(e.message); }
+    finally { Object.assign(settings, prev); }
+  },
+  'reset-demo': () => { if (!confirm('Reset all demo art, chats and plans on this device?')) return; db = seedDb(); saveDb(); state.jobs = []; closeModal(); route(); toast('Demo data reset.'); },
+};
+const forms = {
+  comment: async f => { const t = f.elements.t.value.trim(); if (!t) return; await api.addComment(f.dataset.id, { by: state.me, text: t }); await openArt(f.dataset.id); },
+  msg: async f => {
+    const tid = f.dataset.tid, text = f.elements.t.value.trim(); if (!text) return;
+    const ask = f.elements.frank.checked || /^@frank\b/i.test(text);
+    f.elements.t.value = '';
+    await api.postMessage(tid, { by: state.me, text });
+    await refreshMsgs(tid);
+    if (!ask) return;
+    const box = $('#msgs');
+    box.insertAdjacentHTML('beforeend', `<div class="msg frank">${avatar('frank', true)}<div class="body"><div class="who"><b>Frank</b></div><i class="muted">thinking…</i></div></div>`);
+    box.scrollTop = box.scrollHeight;
+    try { await api.askFrank(tid, { by: state.me, text }); } catch (e) { toast(e.message); }
+    await refreshMsgs(tid);
+  },
+  thread: async f => { const t = await api.newThread({ title: f.elements.title.value.trim(), by: state.me }); closeModal(); location.hash = '#/talk/' + t.id; },
+  task: async f => { await api.saveTask({ title: f.elements.title.value.trim(), owner: f.elements.owner.value, status: 'todo' }); renderPlan(); },
+  window: async f => {
+    const p = { artist: f.elements.artist.value, base: f.elements.base.value, when: f.elements.when.value, note: f.elements.note.value.trim(), by: state.me };
+    await api.requestWindow(p); toast('Requested. Tripp and Frank will schedule it.'); renderLab();
+  },
+  upload: async f => {
+    if (!pendingUpload) return;
+    await api.uploadArt({ dataUrl: pendingUpload, title: f.elements.title.value.trim() || 'Untitled', kind: f.elements.kind.value, basedOn: f.elements.basedOn.value || null, note: f.elements.note.value.trim(), by: state.me });
+    pendingUpload = null; closeModal(); toast('Hung on the wall.');
+    if (currentRoute() === 'gallery' || currentRoute() === 'home') route();
+  },
+  settings: async f => {
+    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = f.elements.token.value.trim();
+    store.set('settings', settings); closeModal(); updateStatus(); route();
+    toast(settings.apiBase ? 'Saved. Talking to Frank now.' : 'Demo mode.');
+  },
+};
+
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = acts[el.dataset.act]; if (!fn) return;
+  e.preventDefault();
+  try { await fn(el, e); } catch (err) { toast(err.message || 'Something went wrong.'); }
+});
+document.addEventListener('submit', async e => {
+  const f = e.target.closest('form[data-form]'); if (!f) return;
+  e.preventDefault();
+  const btn = f.querySelector('button:not([type=button])'); if (btn) btn.disabled = true;
+  try { await forms[f.dataset.form](f); } catch (err) { toast(err.message || 'Something went wrong.'); }
+  finally { if (btn && btn.isConnected) btn.disabled = false; }
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.bind) S[el.dataset.bind] = el.value;
+  if (el.dataset.w) {
+    S.w[el.dataset.w] = el.value / 100; el.nextElementSibling.textContent = (el.value / 100).toFixed(2);
+    S.preset = null; document.querySelectorAll('[data-act=preset].on').forEach(c => c.classList.remove('on'));
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && e.target.matches('.composer textarea') && window.matchMedia('(pointer:fine)').matches) { e.preventDefault(); e.target.form.requestSubmit(); }
+});
+
+function fileToDataUrl(file, max) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => { const img = new Image(); img.onload = () => {
+      const sc = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .84));
+    }; img.onerror = rej; img.src = fr.result; };
+    fr.onerror = rej; fr.readAsDataURL(file);
+  });
+}
+$('#file').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  try { pendingUpload = await fileToDataUrl(file, api.demo ? 900 : 2048); } catch (err) { return toast("Couldn't read that image."); }
+  const gens = (await api.listArt().catch(() => [])).filter(a => a.kind === 'generated');
+  openModal(`<h2>Add to the wall</h2><img class="preview" src="${pendingUpload}" alt="Preview">
+    <form data-form="upload">
+      <label class="f">Title<input name="title" required placeholder="What's it called?"></label>
+      <label class="f">What is it?<select name="kind"><option value="hand">My own work, made by hand</option><option value="reference">Reference or inspiration</option></select></label>
+      <label class="f">Based on one of Frank's pieces?<select name="basedOn"><option value="">No</option>${gens.map(a => `<option value="${a.id}">${esc(a.title)}</option>`).join('')}</select></label>
+      <label class="f">Note<input name="note" placeholder="optional"></label>
+      <button class="btn primary block">Hang it</button>
+    </form>`, 'narrow');
+});
+
+/* ---------- jobs ---------- */
+async function pollJob(id) {
+  let misses = 0;
+  for (;;) {
+    await wait(api.demo ? 400 : 2500);
+    let j;
+    try { j = await api.job(id); misses = 0; } catch (e) { if (++misses > 5) { j = { status:'failed', message: e.message }; } else continue; }
+    const i = state.jobs.findIndex(x => x.id === id);
+    if (i > -1) state.jobs[i] = { ...state.jobs[i], ...j };
+    refreshQueue();
+    if (j.status === 'done') { toast(`${(j.art || []).length} new on the wall.`); break; }
+    if (j.status === 'failed') break;
+  }
+}
+
+/* ---------- router ---------- */
+const routes = { home: renderHome, studio: renderStudio, gallery: renderGallery, talk: renderTalk, lab: renderLab, plan: renderPlan };
+const currentRoute = () => (location.hash.replace(/^#\/?/, '') || 'home').split('/')[0];
+async function route() {
+  const [name, arg] = (location.hash.replace(/^#\/?/, '') || 'home').split('/');
+  const r = routes[name] ? name : 'home';
+  document.querySelectorAll('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.r === r));
+  view.innerHTML = '<div class="loading">One moment…</div>';
+  try { await routes[r](arg); window.scrollTo(0, 0); }
+  catch (e) {
+    view.innerHTML = `<div class="empty"><h3>Couldn't load this</h3><p>${esc(e.message)}</p><button class="btn" data-act="settings">Check settings</button></div>`;
+  }
+}
+
+/* ---------- boot ---------- */
+const params = new URLSearchParams(location.search);
+if (params.get('api')) {
+  settings.apiBase = params.get('api'); store.set('settings', settings);
+  history.replaceState(null, '', location.pathname + location.hash);
+}
+renderMe(); updateStatus(); setInterval(updateStatus, 60000);
+window.addEventListener('hashchange', route);
+route();
+if (!state.me) openWho(true);
+})();
+</script>
+</body>
+</html>
