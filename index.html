@@ -222,6 +222,7 @@ form label.f input,form label.f select,form label.f textarea{margin-top:5px}
   <button class="status" id="status" data-act="settings" title="Connection to Frank"><i></i><span>…</span></button>
   <button class="me" id="me" data-act="who" title="Switch who's here"></button>
 </header>
+<div id="demo-banner" hidden style="background:var(--chrome);color:#222;padding:8px 16px;font-size:14px;text-align:center">Demo mode: Frank is pretend and this art is made up. <button class="btn sm" data-act="settings" style="margin-left:8px">Connect to Frank</button></div>
 <main id="view"><div class="loading">Opening the studio…</div></main>
 <div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" hidden></div>
@@ -237,7 +238,7 @@ form label.f input,form label.f select,form label.f textarea{margin-top:5px}
    on this device only). Can also be set from the Settings sheet
    or by opening the site with ?api=https://your-frank-address
    ============================================================ */
-const DEFAULT_API_BASE = '';
+const DEFAULT_API_BASE = 'https://tripp-super-server.tail9279ff.ts.net:8443';
 
 const ARTISTS = [
   { id:'vangogh',  name:'Van Gogh', role:'color, sky, brushwork',      color:'#2a4db3' },
@@ -307,6 +308,7 @@ const store = (() => {
 })();
 
 const settings = store.get('settings', { apiBase: DEFAULT_API_BASE, token: '' });
+if (!settings.apiBase && !settings.demo) { settings.apiBase = DEFAULT_API_BASE; store.set('settings', settings); }
 const state = { me: store.get('me', null), jobs: [], gFilter: 'all' };
 const S = { idea:'', prompt:'', w:{ vangogh:.7, leonardo:0, bosch:0 }, count:'2', aspect:'square', seed:'', preset:null };
 
@@ -551,6 +553,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalEl.h
 function renderMe() { $('#me').innerHTML = avatar(state.me) + `<span class="nm">${esc(person(state.me).name)}</span>`; }
 async function updateStatus() {
   const el = $('#status');
+  const banner = $('#demo-banner'); if (banner) banner.hidden = !api.demo;
   if (api.demo) { el.className = 'status demo'; el.querySelector('span').textContent = 'Demo mode'; return; }
   try {
     const st = await api.status();
@@ -810,7 +813,7 @@ async function signIn(token) {
 }
 function openSettings() {
   openModal(`<p class="eyebrow">Settings</p><h2>Connect to Frank</h2>
-    <p class="muted sm">Leave the address blank to stay in demo mode. Everything works, but Frank is simulated and art stays on this device.</p>
+    <p class="muted sm">The address is filled in for the family studio. Clear it only if you want demo mode, where Frank is simulated and art stays on this device.</p>
     <form data-form="settings">
       <label class="f">Frank's address<input name="apiBase" placeholder="https://voldemort.your-tailnet.ts.net" value="${esc(settings.apiBase)}" autocomplete="off" inputmode="url"></label>
       <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
@@ -905,9 +908,9 @@ const forms = {
     if (currentRoute() === 'gallery' || currentRoute() === 'home') route();
   },
   settings: async f => {
-    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = cleanCode(f.elements.token.value);
+    settings.apiBase = f.elements.apiBase.value.trim(); settings.token = cleanCode(f.elements.token.value); settings.demo = !settings.apiBase;
     store.set('settings', settings); closeModal();
-    if (!settings.apiBase) { updateStatus(); route(); return toast('Demo mode.'); }
+    if (!settings.apiBase) { updateStatus(); route(); return toast('Demo mode. Frank is pretend until you enter his address.'); }
     if (!settings.token) { updateStatus(); route(); return openSignIn(false); }
     if (!(await signIn(settings.token))) openSignIn(false, "Frank doesn't know that code. Check for a missing letter, and paste it rather than typing.");
   },
