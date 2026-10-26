@@ -30,3 +30,5 @@ Shortcut: https://trippmorgan.github.io/atelier/?api=https://tripp-super-server.
 - `index.html`: the app. To change people, painters, or recipes, edit `PEOPLE`, `ARTISTS`, or `PRESETS` near the top of the script.
 - `API.md`: the contract Frank implements.
 - `FRANK_HANDOFF.md`: the build prompt to give Frank.
+
+The same page is also served by the API itself at https://tripp-super-server.tail9279ff.ts.net:8443/ (tailnet only, same origin, so no CORS). A local copy of index.html (file://, VS Code Live Server on :5500, etc.) is refused by the API's origin check; use one of the two live addresses instead.
