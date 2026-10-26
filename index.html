@@ -512,7 +512,7 @@ const api = {
       const headers = { 'Content-Type':'application/json' };
       if (settings.token) headers.Authorization = 'Bearer ' + settings.token;
       const r = await fetch(settings.apiBase.replace(/\/+$/, '') + path, { method, headers, signal: ctl.signal, body: body ? JSON.stringify(body) : undefined });
-      if (!r.ok) { let m = 'Frank said ' + r.status; try { const j = await r.json(); m = j.error || j.detail || m; } catch (e) {} const err = new Error(m); err.status = r.status; throw err; }
+      if (!r.ok) { let m = 'Frank said ' + r.status, j = null; try { j = await r.json(); m = j.error || j.detail || m; } catch (e) {} const err = new Error(m); err.status = r.status; if (j && j.agreement) { err.agreement = true; setTimeout(() => openAgreement(false), 0); } throw err; }
       return r.status === 204 ? null : r.json();
     } catch (e) {
       if (e.name === 'AbortError') throw new Error('Frank took too long to answer.');
@@ -521,6 +521,8 @@ const api = {
     } finally { clearTimeout(timer); }
   },
   status()            { return this.demo ? mock.status()            : this.req('GET',  '/api/status'); },
+  agreement()         { return this.demo ? Promise.resolve({ version:'demo', text:'Demo mode: nothing is recorded or minted.', agreed:true }) : this.req('GET', '/api/agreement'); },
+  acceptAgreement()   { return this.demo ? Promise.resolve({ agreed:true }) : this.req('POST', '/api/agreement/accept'); },
   listArt()           { return this.demo ? mock.listArt()           : this.req('GET',  '/api/art'); },
   getArt(id)          { return this.demo ? mock.getArt(id)          : this.req('GET',  `/api/art/${id}`); },
   uploadArt(p)        { return this.demo ? mock.uploadArt(p)        : this.req('POST', '/api/art', p); },
@@ -561,6 +563,8 @@ async function updateStatus() {
     const [c, l] = map[st.state] || ['off', 'Frank offline'];
     el.className = 'status ' + c; el.querySelector('span').textContent = l;
     if (st.me && st.me !== state.me) { state.me = st.me; store.set('me', state.me); renderMe(); }
+    state.agreed = st.agreed !== false;
+    if (!state.agreed && modalEl.hidden && !state.askedAgreement) { state.askedAgreement = true; openAgreement(true); }
   } catch (e) {
     if (e.status === 401) { el.className = 'status warn'; el.querySelector('span').textContent = settings.token ? 'Code not accepted' : 'Enter your code'; }
     else { el.className = 'status off'; el.querySelector('span').textContent = "Can't reach Frank"; }
@@ -683,6 +687,7 @@ async function openArt(id) {
         ${a.seed != null ? `<dt>Seed</dt><dd><code>${esc(a.seed)}</code></dd>` : ''}
         ${a.model ? `<dt>Model</dt><dd>${esc(a.model)}</dd>` : ''}
         <dt>Ledger</dt><dd>${a.ledger ? `<code>${esc(a.ledger)}</code>` : '<span class="muted">Not recorded yet</span>'}</dd>
+        <dt>NFT</dt><dd>${a.nft && a.nft.asset_id ? `<code>${esc(a.nft.chain || 'jarvis')}${a.nft.seq ? '#' + esc(a.nft.seq) : ''} · ${esc(String(a.nft.asset_id).slice(0, 12))}…</code> <span class="muted sm">owned by ${esc(person(a.nft.owner).name)}</span>` : '<span class="muted">Not minted yet</span>'}</dd>
         <dt>Added</dt><dd>${esc(ago(a.created))}</dd>
       </dl>
       <div class="row">
@@ -811,6 +816,17 @@ async function signIn(token) {
     return false;
   }
 }
+async function openAgreement(first) {
+  openModal(`<p class="eyebrow">${first ? 'Before you paint' : 'The agreement'}</p><h2>The Atelier agreement</h2><div class="loading">One moment…</div>`, 'narrow');
+  let ag; try { ag = await api.agreement(); } catch (e) { sheet.querySelector('.loading').textContent = e.message; return; }
+  const paras = String(ag.text || '').split(/\n\s*\n/).slice(1).map(t => `<p style="margin:0 0 10px;line-height:1.5">${esc(t)}</p>`).join('');
+  sheet.innerHTML = `<button class="x" data-act="close" aria-label="Close">×</button>
+    <p class="eyebrow">${first ? 'Before you paint' : 'The agreement'}</p><h2>The Atelier agreement</h2>
+    <p class="muted sm">Version ${esc(ag.version)}${ag.agreed ? ` · you agreed ${esc((ag.at || '').slice(0, 10))}` : ''}</p>
+    <div style="max-height:46vh;overflow:auto;padding-right:6px;font-size:14px">${paras}</div>
+    ${ag.agreed ? `<p class="muted sm" style="margin-top:12px">Recorded on the ledger${ag.ledger ? ` as <code>${esc(ag.ledger)}</code>` : ''}.</p>` :
+      `<div class="row" style="margin-top:14px"><button class="btn primary" data-act="agree">I agree</button><button class="btn ghost" data-act="close">Not now, just looking</button></div>`}`;
+}
 function openSettings() {
   openModal(`<p class="eyebrow">Settings</p><h2>Connect to Frank</h2>
     <p class="muted sm">The address is filled in for the family studio. Clear it only if you want demo mode, where Frank is simulated and art stays on this device.</p>
@@ -819,6 +835,8 @@ function openSettings() {
       <label class="f">Studio code<input name="token" type="password" placeholder="from Tripp" value="${esc(settings.token)}" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
       <div class="row"><button class="btn primary">Save</button><button type="button" class="btn" data-act="test-conn">Test connection</button></div>
     </form>
+    <h4>The agreement</h4>
+    <button class="btn sm ghost" data-act="agreement">Read the Atelier agreement</button>
     <h4>Demo data</h4>
     <button class="btn sm ghost" data-act="reset-demo">Reset demo data on this device</button>`, 'narrow');
 }
@@ -829,6 +847,12 @@ const acts = {
   close: closeModal,
   settings: openSettings,
   signin: () => openSignIn(false),
+  agreement: () => openAgreement(false),
+  agree: async el => {
+    el.disabled = true; el.textContent = 'Recording…';
+    try { await api.acceptAgreement(); state.agreed = true; closeModal(); toast('Thank you. Your work in the Atelier is yours, and on the ledger.'); route(); }
+    catch (e) { el.disabled = false; el.textContent = 'I agree'; toast(e.message); }
+  },
   who: () => openWho(false),
   'pick-who': el => { state.me = el.dataset.id; store.set('me', state.me); delete modalEl.dataset.locked; closeModal(); renderMe(); route(); },
   upload: () => $('#file').click(),
