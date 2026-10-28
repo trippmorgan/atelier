@@ -753,7 +753,7 @@ async function renderLab() {
       <form data-form="window">
         <label class="f">Painter<select name="artist">${ARTISTS.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}</select></label>
         <label class="f">Model<select name="base"><option value="SDXL">SDXL (better brushwork, mixes with the others)</option><option value="SD1.5">SD 1.5 (quick test run)</option></select></label>
-        <label class="f">When<select name="when"><option>Tonight after midnight</option><option>Tomorrow night</option><option>This weekend</option></select></label>
+        <label class="f">When<input type="datetime-local" name="when" required></label>
         <label class="f">Note for Frank<input name="note" placeholder="optional"></label>
         <button class="btn primary">Request window</button>
       </form>
@@ -910,7 +910,7 @@ const forms = {
     const tid = f.dataset.tid, text = f.elements.t.value.trim(); if (!text) return;
     const ask = f.elements.frank.checked || /^@frank\b/i.test(text);
     f.elements.t.value = '';
-    await api.postMessage(tid, { by: state.me, text });
+    if (!ask || api.demo) await api.postMessage(tid, { by: state.me, text });
     await refreshMsgs(tid);
     if (!ask) return;
     const box = $('#msgs');
@@ -922,7 +922,7 @@ const forms = {
   thread: async f => { const t = await api.newThread({ title: f.elements.title.value.trim(), by: state.me }); closeModal(); location.hash = '#/talk/' + t.id; },
   task: async f => { await api.saveTask({ title: f.elements.title.value.trim(), owner: f.elements.owner.value, status: 'todo' }); renderPlan(); },
   window: async f => {
-    const p = { artist: f.elements.artist.value, base: f.elements.base.value, when: f.elements.when.value, note: f.elements.note.value.trim(), by: state.me };
+    const p = { artist: f.elements.artist.value, base: f.elements.base.value, when: new Date(f.elements.when.value).toISOString(), note: f.elements.note.value.trim(), by: state.me };
     await api.requestWindow(p); toast('Requested. Tripp and Frank will schedule it.'); renderLab();
   },
   upload: async f => {
